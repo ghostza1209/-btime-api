@@ -10,4 +10,7 @@ module.exports = function (app) {
         .get(user.getById)
         .put(user.editUser)
 
+    app.route('/login')
+        .post(user.login)
+
 }

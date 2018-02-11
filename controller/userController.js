@@ -59,3 +59,20 @@ exports.editUser = (req, res, next) => {
     })
 
 }
+
+exports.login = (req, res, next) => {
+    user.findOne({
+        'username': req.body.username,
+        'password': req.body.password
+    }, function (err, user) {
+        if (err) {
+            res.send(err)
+            return
+        }
+        if (user !== null) {
+            res.json(user)
+        } else {
+            res.sendStatus(204) 
+        }
+    });
+}
