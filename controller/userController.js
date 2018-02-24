@@ -1,19 +1,39 @@
 var user = require('../model/user')
 
+exports.register = (req, res, next) => {
+    req.checkBody("name", "Name is required").notEmpty();
+    req.checkBody("lastname", "Lastname is required").notEmpty();
+    req.checkBody("username", "Username is required").notEmpty();
+    req.checkBody("password", "password is required").notEmpty();
+    req.checkBody("confirmPass", "enter confirm password").notEmpty();
+    req.checkBody("confirmPass", "Passwords do not match").equals(req.body.password);
+    req.checkBody("rate", "Rate is required").notEmpty();
 
-exports.addUser = (req, res, next) => {
-    var newUser = new user(req.body)
-    newUser.save(function (err, user) {
-        if (err) {
-            res.status(400).send(err)
-        } else {
-            res.json(user)
-        }
-    })
+    var errors = req.validationErrors();
+    if (errors) {
+        return res.send(errors)
+    } else {
+        var newUser = new user({
+            name: req.body.name,
+            lastName: req.body.lastname,
+            username: req.body.username,
+            password: req.body.password,
+            confirm: req.body.confirmPass,
+            rate: req.body.rate,
+            provider: req.body.provider
+        });
+
+        user.createUser(newUser, function (err, user) {
+            if (err) return err;
+        });
+        res.send("1")
+    }
 }
 
-exports.getUser = (req, res, next) => {
-    user.find().exec(function (err, user) {
+
+
+exports.getUser = async (req, res, next) => {
+    await user.find({}).where('type', 0).select('-password -salt -provider -__v -type').exec(function (err, user) {
         if (err) {
             res.status(400).send(err)
         } else {
@@ -60,19 +80,15 @@ exports.editUser = (req, res, next) => {
 
 }
 
-exports.login = (req, res, next) => {
+exports.getUserByUsername = (req, res, next) => {
     user.findOne({
-        'username': req.body.username,
-        'password': req.body.password
-    }, function (err, user) {
+        username: req.params.username
+    }, (err, user) => {
         if (err) {
-            res.send(err)
-            return
-        }
-        if (user !== null) {
-            res.json(user)
+            res.status(400).send(err)
         } else {
-            res.sendStatus(204) 
+            res.json(user)
         }
-    });
+    })
 }
+
