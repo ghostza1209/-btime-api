@@ -1,33 +1,77 @@
 var user = require('../model/user')
-
+var path = require('path')
+var formidable = require('formidable')
+var fs = require('fs')
+// var Busboy = require('busboy');
 exports.register = (req, res, next) => {
-    req.checkBody("name", "Name is required").notEmpty();
-    req.checkBody("lastname", "Lastname is required").notEmpty();
-    req.checkBody("username", "Username is required").notEmpty();
-    req.checkBody("password", "password is required").notEmpty();
-    req.checkBody("confirmPass", "enter confirm password").notEmpty();
-    req.checkBody("confirmPass", "Passwords do not match").equals(req.body.password);
-    req.checkBody("rate", "Rate is required").notEmpty();
-
-    var errors = req.validationErrors();
+    var newUser = new user({
+        name: undefined,
+        lastName: undefined,
+        username: undefined,
+        password: undefined,
+        confirm: undefined,
+        rate: undefined,
+        provider: undefined,
+        profileImage: undefined
+    });
+    let errors = req.validationErrors();
     if (errors) {
         return res.send(errors)
     } else {
-        var newUser = new user({
-            name: req.body.name,
-            lastName: req.body.lastname,
-            username: req.body.username,
-            password: req.body.password,
-            confirm: req.body.confirmPass,
-            rate: req.body.rate,
-            provider: req.body.provider
+        // Config formidable
+        const uploadDir = path.join('public/upload/')
+        let form = new formidable.IncomingForm();
+        form.multiples = false
+        form.keepExtensions = true
+        form.maxFieldsSize = 5 * 1024 * 1024
+        // form.uploadDir = uploadDir
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+                res.status(500).json({
+                    errors: err
+                })
+            } else {
+                if (files.hasOwnProperty('file')) {
+                    console.log("has file")
+                } else {
+                    console.log("no file")
+                }
+                newUser.name = fields.name
+                newUser.lastName = fields.lastname
+                newUser.username = fields.username
+                newUser.password = fields.password
+                newUser.confirm = fields.confirmPass
+                newUser.rate = fields.rate
+                newUser.provider = fields.provider
+                // Insert User into Mongodb
+                user.createUser(newUser, function (err, user) {
+                    if (err) {
+                        return err
+                    }
+                });
+            }
         });
-
-        user.createUser(newUser, function (err, user) {
-            if (err) return err;
+        form.on('fileBegin', function (name, file) {
+            console.log("file Begin")
+            const [fileName, fileExt] = file.name.split('.')
+            const newFileNameIncludeExt = `${new Date().getTime()}.${fileExt}`
+            // file.path must be define but won't work when lost
+            file.path = path.join(uploadDir, newFileNameIncludeExt)
+            newUser.profileImage = file.path
         });
-        res.send("1")
+        // form.onPart = function (part) {
+        //     Object.prototype.count = function () {
+        //         var count = 0;
+        //         for (var prop in this) {
+        //             if (this.hasOwnProperty(prop))
+        //                 count = count + 1;
+        //         }
+        //         return count;
+        //     }
+        // }
     }
+    res.send('1')
+
 }
 
 
@@ -43,13 +87,28 @@ exports.getUser = async (req, res, next) => {
 }
 
 exports.delUser = (req, res, next) => {
-    user.remove({
+    user.findOne({
         _id: req.params.id
-    }, function (err) {
+    }, (err, user) => {
         if (err) {
-            console.log('remove failed')
+            return res.status(400).send(err)
         } else {
-            res.send('delete ok')
+            let profileImagePath = user.profileImage
+            if (profileImagePath !== undefined) {
+                fs.unlink(profileImagePath, (err) => {
+                    if (err) return res.status(400).send(err);
+                });
+            }
+            user.remove({
+                _id: req.params.id
+            }, function (err) {
+                if (err) {
+                    console.log('remove failed')
+                    return res.status(400).send(err)
+                } else {
+                    return res.send('delete ok')
+                }
+            })
         }
     })
 }
@@ -91,4 +150,3 @@ exports.getUserByUsername = (req, res, next) => {
         }
     })
 }
-

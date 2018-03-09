@@ -1,8 +1,6 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 var moment = require('moment')
-
-
 var attendSchema = new Schema({
     attendTime: {
         type: String

@@ -39,6 +39,9 @@ var UserSchema = new Schema({
         trim: true,
         // required: true
     },
+    profileImage: {
+        type: String
+    },
     dateCreate: {
         type: Date,
         default: Date.now
@@ -50,7 +53,9 @@ var UserSchema = new Schema({
 })
 
 UserSchema.statics.getUserByUsername = (username, callback) => {
-    user.findOne({username: username}, callback);
+    user.findOne({
+        username: username
+    }, callback);
 }
 
 UserSchema.statics.getUserbyId = (id, callback) => {

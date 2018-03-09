@@ -14,7 +14,6 @@ module.exports = function () {
                         message: 'Unknown User'
                     });
                 }
-
                 User.comparePassword(password, user.salt, function (err, isMatch) {
                     if (err) {
                         return err;
