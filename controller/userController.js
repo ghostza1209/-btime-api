@@ -2,7 +2,7 @@ var user = require('../model/user')
 var path = require('path')
 var formidable = require('formidable')
 var fs = require('fs')
-// var Busboy = require('busboy');
+
 exports.register = (req, res, next) => {
     var newUser = new user({
         name: undefined,
@@ -120,7 +120,14 @@ exports.getById = (req, res, next) => {
         if (err) {
             res.status(400).send(err)
         } else {
-            res.json(user)
+            res.json({
+                name: user.name,
+                lastName: user.lastName,
+                username: user.username,
+                password: user.password,
+                rate: user.rate,
+                profileImage: user.profileImage
+            })
         }
     })
 }

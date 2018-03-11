@@ -5,8 +5,11 @@ router.route('/attend')
     .post(attendController.addWorkTime)
     .get(attendController.getAllAttendInThisDay)
 
-router.route('/attend/:id')
-    .put(attendController.updateAttendByid)
-    .get(attendController.getAttendById)
+// router.route('/attend/:id')
+//     .put(attendController.updateAttendByid)
+//     .get(attendController.getAttendById)
 
+router.route('/checkOut')
+    .post(attendController.addCheckoutTime)
+    .get(attendController.getAllCheckoutInThisDay)
 module.exports = router

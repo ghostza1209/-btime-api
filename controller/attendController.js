@@ -1,58 +1,101 @@
 var attend = require('../model/attend')
+var checkOut = require("../model/checkOut")
 var moment = require('moment')
 var startDay = moment().startOf('day').toISOString()
 var endDay = moment().endOf('day').add(7, 'h').toISOString()
+// Set local zone
+moment.locale("th");
+var timeNow = moment(new Date(), "HH:mm").format('LTS');
 
 
 exports.addWorkTime = (req, res, next) => {
-    req.checkBody("timeIn", "กรุณากรอกเวลาเข้างาน").notEmpty();
-    req.checkBody("timeOut", " กรุณากรอกเวลาออกงาน").notEmpty();
-    // req.checkBody("whereWork", "กรุณากรอกสถานที่ทำงาน ").equals(0);
-    var errors = req.validationErrors();
-    if (errors) {
-        return res.send(errors)
-    } else {
-        let newAttend = new attend({
-            attendTime: req.body.timeIn,
-            offTime: req.body.timeOut,
-            workPlace: req.body.whereWork,
-            user: req.body.id
+    let newAttend = new attend({
+        attendTime: timeNow,
+        user: req.body.id
+    })
+    //function createAteend 
+    createAttend = function () {
+        attend.createAttend(newAttend, (err, user) => {
+            if (err) {
+                res.status(404).send({
+                    message: "ไม่สามารถลงเวลาเข้าได้!" + err
+                })
+            }
+            res.status(200).send({
+                message: "ลงเวลาเข้าสำเร็จ!"
+            })
         })
-        // console.log(newAttend)
-        attend.find({
-                date: {
-                    $gte: startDay,
-                    $lt: endDay
-                },
-                user: newAttend.user
-            })
-            .populate('user')
-            .exec((err, attendData) => {
-
-                if (attendData.length == 0) {
-                    attend.createAttend(newAttend, (err, user) => {
-                        if (err) return err;
-                        console.log(user)
-                    });
-                    console.log("is not attend")
-                    // return res.status(200).json({
-                    //     // errors: "",
-                    //     status: 1
-                    // })
-                    res.send("1")
-                } else {
-                    console.log(attendData[0].user.username + " have attend already on today")
-                    // return res.status(200).json({
-                    //     // errors: attendData[0].user.username + "ลงเวลาเข้าแล้ว",
-                    //     status: 0
-                    // })
-                }
-            })
     }
+    //check Is attend in today!
+    attend.find({
+        user: req.body.id,
+        date: {
+            $gte: startDay,
+            $lt: endDay
+        }
+    }).exec((err, data) => {
+        if (err) {
+            return (res.status(200).send({
+                message: "พบปัญหา : " + err
+            }))
+        } else {
+            if (data.length == 0) {
+                //Insert to attend collections
+                createAttend()
+            } else {
+                res.status(200).send({
+                    message: "รหัส " + data[0].user + " ได้ลงเวลาแล้ว"
+                })
+            }
+        }
+    })
+}
+
+
+exports.addCheckoutTime = (req, res, next) => {
+    let newCheckOut = new checkOut({
+        checkOutTime: timeNow,
+        user: req.body.id
+    })
+    //function createAteend 
+    createCheckout = function () {
+        checkOut.createCheckout(newCheckOut, (err, user) => {
+            if (err) {
+                res.status(404).send({
+                    message: "ไม่สามารถลงเวลาออกได้!" + err
+                })
+            }
+            res.status(200).send({
+                message: "ลงเวลาออกสำเร็จ!"
+            })
+        })
+    }
+    //check Is attend in today!
+    checkOut.find({
+        user: req.body.id,
+        date: {
+            $gte: startDay,
+            $lt: endDay
+        }
+    }).exec((err, data) => {
+        if (err) {
+            return (res.status(200).send({
+                message: "พบปัญหา : " + err
+            }))
+        } else {
+            if (data.length == 0) {
+                //Insert to attend collections
+                createCheckout()
+            } else {
+                res.status(200).send({
+                    message: "รหัส " + data[0].user + " ได้ลงเวลาแล้ว"
+                })
+            }
+        }
+    })
 }
 
 exports.getAllAttendInThisDay = (req, res, next) => {
-    console.log(endDay)
     attend.find({
             date: {
                 $gte: startDay,
@@ -60,20 +103,47 @@ exports.getAllAttendInThisDay = (req, res, next) => {
             }
         })
         .populate('user', 'name lastName')
-        .populate('workPlace', 'projectName villaName')
+        // .populate('workPlace', 'projectName villaName')
         .exec()
         .then(attend => {
-            if (!attend) {
-                return res.status(404).json({
-                    message: 'Attend not found'
+            if (attend.length == 0) {
+                return res.status(200).json({
+                    message: 'ยังไม่มีคนลงเวลางาน',
+                    count: attend.length
                 })
             }
+
             res.status(200).json({
                 count: attend.length,
-                attend: attend
+                attend: attend,
+                message: ""
             })
         })
+}
 
+exports.getAllCheckoutInThisDay = (req, res, next) => {
+    checkOut.find({
+            date: {
+                $gte: startDay,
+                $lt: endDay
+            }
+        })
+        .populate('user', 'name lastName')
+        .exec()
+        .then(attend => {
+            if (attend.length == 0) {
+                return res.status(200).json({
+                    message: 'ยังไม่มีคนลงเวลางาน',
+                    count: attend.length
+                })
+            }
+
+            res.status(200).json({
+                count: attend.length,
+                attend: attend,
+                message: ""
+            })
+        })
 }
 
 exports.updateAttendByid = (req, res, next) => {

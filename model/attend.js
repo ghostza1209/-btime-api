@@ -5,13 +5,6 @@ var attendSchema = new Schema({
     attendTime: {
         type: String
     },
-    offTime: {
-        type: String
-    },
-    workPlace: {
-        type: Schema.Types.ObjectId,
-        ref: 'workPlace'
-    },
     user: {
         type: Schema.Types.ObjectId,
         ref: "user"
@@ -26,7 +19,7 @@ var attendSchema = new Schema({
 
 attendSchema.statics.checkIsAttend = (newAttend, callback) => {
     var startDay = moment().startOf('day').toISOString()
-    var endDay = moment().endOf('day').add(7,'h').toISOString()
+    var endDay = moment().endOf('day').add(7, 'h').toISOString()
     attend.find({
             date: {
                 $gte: startDay,
@@ -39,11 +32,11 @@ attendSchema.statics.checkIsAttend = (newAttend, callback) => {
 }
 
 attendSchema.statics.createAttend = (newAttend, callback) => {
-    newAttend.save(function (err) {
+    newAttend.save(function (err, attend, numAffected) {
         if (err) {
             return err
         } else {
-            console.log("Success")
+            return callback(null, attend)
         }
     });
 }
