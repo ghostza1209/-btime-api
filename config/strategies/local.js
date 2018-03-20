@@ -2,10 +2,10 @@ var passport = require('passport')
 var LocalStrategy = require('passport-local').Strategy
 var User = require('mongoose').model('user')
 
-module.exports = function () {
+module.exports = function() {
     passport.use(new LocalStrategy(
-        function (username, password, done) { // Verigy callback
-            User.getUserByUsername(username, function (err, user) {
+        function(username, password, done) { // Verify callback
+            User.getUserByUsername(username, function(err, user) {
                 if (err) {
                     return done(err);
                 }
@@ -14,7 +14,7 @@ module.exports = function () {
                         message: 'Unknown User'
                     });
                 }
-                User.comparePassword(password, user.salt, function (err, isMatch) {
+                User.comparePassword(password, user.salt, function(err, isMatch) {
                     if (err) {
                         return err;
                     }
@@ -27,7 +27,7 @@ module.exports = function () {
                     }
                 });
 
-                
+
             });
         }));
 }

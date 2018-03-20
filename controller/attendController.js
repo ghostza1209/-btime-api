@@ -3,30 +3,30 @@ var checkOut = require("../model/checkOut")
 var moment = require('moment')
 var startDay = moment().startOf('day').toISOString()
 var endDay = moment().endOf('day').add(7, 'h').toISOString()
-// Set local zone
+    // Set local zone
 moment.locale("th");
 var timeNow = moment(new Date(), "HH:mm").format('LTS');
 
 
 exports.addWorkTime = (req, res, next) => {
     let newAttend = new attend({
-        attendTime: timeNow,
-        user: req.body.id
-    })
-    //function createAteend 
-    createAttend = function () {
-        attend.createAttend(newAttend, (err, user) => {
-            if (err) {
-                res.status(404).send({
-                    message: "ไม่สามารถลงเวลาเข้าได้!" + err
-                })
-            }
-            res.status(200).send({
-                message: "ลงเวลาเข้าสำเร็จ!"
-            })
+            attendTime: timeNow,
+            user: req.body.id
         })
-    }
-    //check Is attend in today!
+        //function createAteend 
+    createAttend = function() {
+            attend.createAttend(newAttend, (err, user) => {
+                if (err) {
+                    res.status(404).send({
+                        message: "ไม่สามารถลงเวลาเข้าได้!" + err
+                    })
+                }
+                res.status(200).send({
+                    message: "ลงเวลาเข้าสำเร็จ!"
+                })
+            })
+        }
+        //check Is attend in today!
     attend.find({
         user: req.body.id,
         date: {
@@ -54,23 +54,23 @@ exports.addWorkTime = (req, res, next) => {
 
 exports.addCheckoutTime = (req, res, next) => {
     let newCheckOut = new checkOut({
-        checkOutTime: timeNow,
-        user: req.body.id
-    })
-    //function createAteend 
-    createCheckout = function () {
-        checkOut.createCheckout(newCheckOut, (err, user) => {
-            if (err) {
-                res.status(404).send({
-                    message: "ไม่สามารถลงเวลาออกได้!" + err
-                })
-            }
-            res.status(200).send({
-                message: "ลงเวลาออกสำเร็จ!"
-            })
+            checkOutTime: timeNow,
+            user: req.body.id
         })
-    }
-    //check Is attend in today!
+        //function createAteend 
+    createCheckout = function() {
+            checkOut.createCheckout(newCheckOut, (err, user) => {
+                if (err) {
+                    res.status(404).send({
+                        message: "ไม่สามารถลงเวลาออกได้!" + err
+                    })
+                }
+                res.status(200).send({
+                    message: "ลงเวลาออกสำเร็จ!"
+                })
+            })
+        }
+        //check Is attend in today!
     checkOut.find({
         user: req.body.id,
         date: {
@@ -102,7 +102,7 @@ exports.getAllAttendInThisDay = (req, res, next) => {
                 $lt: endDay
             }
         })
-        .populate('user', 'name lastName')
+        .populate('user', 'name lastName profileImage')
         // .populate('workPlace', 'projectName villaName')
         .exec()
         .then(attend => {

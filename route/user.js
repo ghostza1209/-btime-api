@@ -60,21 +60,19 @@ router.post('/user/:username', (req, res) => {
 })
 
 local() //เรียกใช้ LocalStrategy
-passport.serializeUser(function (user, done) { //เก็บ user.id เข้า Cookie
+passport.serializeUser(function(user, done) { //เก็บ user.id เข้า Cookie
     done(null, user.id)
 })
-passport.deserializeUser(function (id, done) { // 
+passport.deserializeUser(function(id, done) { // 
     user.findOne({
         _id: id
-    }, function (err, user) {
+    }, function(err, user) {
         done(err, user)
     })
 })
 
 router.post('/login',
-    passport.authenticate('local'),
-    function (req, res) {
-
+    passport.authenticate('local'), (req, res) => {
         res.json({
             uname: req.user.username,
             id: req.user._id,
