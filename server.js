@@ -14,15 +14,16 @@ const workPlaceRoute = require('./route/workPlace')
 var db = mongoose()
 var app = express()
 
+
 //cors
 app.use(cors())
 
 app.use(express.static('public'))
-// app.use(formidable())
+    // app.use(formidable())
 
 //Body parser middleware
 app.use(bodyParser.urlencoded({
-  extended: true
+    extended: true
 }))
 app.use(bodyParser.json())
 
@@ -31,9 +32,9 @@ app.use(cookieParser())
 
 //express-session 
 app.use(session({
-  secret: 'secret_key',
-  resave: false,
-  saveUninitialized: true
+    secret: 'secret_key',
+    resave: false,
+    saveUninitialized: true
 }))
 
 
@@ -43,20 +44,20 @@ app.use(passport.session());
 
 // Express Validator
 app.use(expressValidator({
-  errorFormatter: function (param, msg, value) {
-    var namespace = param.split('.'),
-      root = namespace.shift(),
-      formParam = root;
+    errorFormatter: function(param, msg, value) {
+        var namespace = param.split('.'),
+            root = namespace.shift(),
+            formParam = root;
 
-    while (namespace.length) {
-      formParam += '[' + namespace.shift() + ']';
+        while (namespace.length) {
+            formParam += '[' + namespace.shift() + ']';
+        }
+        return {
+            param: formParam,
+            msg: msg,
+            value: value
+        };
     }
-    return {
-      param: formParam,
-      msg: msg,
-      value: value
-    };
-  }
 }));
 
 
@@ -65,6 +66,6 @@ app.use(userRoute)
 app.use(attendRoute)
 app.use(workPlaceRoute)
 
-app.listen(3000, function () {
-  console.log('listening on 3000')
+app.listen(3000, function() {
+    console.log('listening on 3000')
 })

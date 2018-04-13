@@ -128,7 +128,7 @@ exports.getAllCheckoutInThisDay = (req, res, next) => {
                 $lt: endDay
             }
         })
-        .populate('user', 'name lastName')
+        .populate('user', 'name lastName profileImage')
         .exec()
         .then(attend => {
             if (attend.length == 0) {
